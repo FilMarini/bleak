@@ -8,9 +8,23 @@ from kivy.uix.scrollview import ScrollView
 # bind bleak's python logger into kivy's logger before importing python module using logging
 from kivy.logger import Logger  # isort: skip
 import logging  # isort: skip
+from kivy import platform
 
 logging.Logger.manager.root = Logger
 
+from android import api_version
+from android.permissions import request_permissions, Permission, check_permission
+permissions_list=[
+    #Permission.INTERNET,
+    Permission.BLUETOOTH_ADMIN,
+    Permission.BLUETOOTH_SCAN,
+    Permission.BLUETOOTH_CONNECT,
+    Permission.ACCESS_COARSE_LOCATION,
+    Permission.ACCESS_FINE_LOCATION,
+    Permission.ACCESS_BACKGROUND_LOCATION
+]
+
+request_permissions(permissions_list)
 
 class ExampleApp(App):
     def __init__(self):
@@ -23,6 +37,10 @@ class ExampleApp(App):
         self.label = Label(font_size="10sp")
         self.scrollview.add_widget(self.label)
         return self.scrollview
+    
+    def on_start(self):
+
+        return super().on_start()
 
     def line(self, text, empty=False):
         Logger.info("example:" + text)
@@ -33,6 +51,7 @@ class ExampleApp(App):
             self.label.text = text
         else:
             self.label.text += text
+
 
     def on_stop(self):
         self.running = False
@@ -79,3 +98,5 @@ if __name__ == "__main__":
     # app running on one thread with two async coroutines
     app = ExampleApp()
     asyncio.run(main(app))
+
+

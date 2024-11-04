@@ -43,6 +43,7 @@ requirements =
     kivy,
     bleak,
     async_to_sync,
+    typing_extensions,
     async-timeout
 
 # (str) Custom source folders for requirements
@@ -95,14 +96,10 @@ fullscreen = 0
 #android.presplash_lottie = "path/to/lottie/file.json"
 
 # (list) Permissions
-android.permissions =
-    BLUETOOTH,
-    BLUETOOTH_SCAN,
-    BLUETOOTH_CONNECT,
-    BLUETOOTH_ADMIN,
-    ACCESS_FINE_LOCATION,
-    ACCESS_COARSE_LOCATION,
-    ACCESS_BACKGROUND_LOCATION
+#android.permissions = android.permission.INTERNET,android.permission.BLUETOOTH_ADMIN,android.permission.BLUETOOTH_CONNECT,android.permission.BLUETOOTH,(name=android.permission.BLUETOOTH_SCAN;usesPermissionFlags=neverForLocation),(name=android.permission.ACCESS_FINE_LOCATION;maxSdkVersion=30),(name=android.permission.ACCESS_COARSE_LOCATION;maxSdkVersion=30)
+android.api = 34
+android.minapi = 29
+android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,ACCESS_BACKGROUND_LOCATION
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host

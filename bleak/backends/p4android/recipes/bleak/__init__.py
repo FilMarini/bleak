@@ -8,7 +8,7 @@ from pythonforandroid.toolchain import info, shprint
 
 class BleakRecipe(PythonRecipe):
     version = None  # Must be none for p4a to correctly clone repo
-    fix_setup_py_version = "bleak develop branch"
+    fix_setup_py_version = "0.22.3"
     url = "git+https://github.com/hbldh/bleak.git"
     name = "bleak"
 
