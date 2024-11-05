@@ -97,9 +97,9 @@ fullscreen = 0
 
 # (list) Permissions
 #android.permissions = android.permission.INTERNET,android.permission.BLUETOOTH_ADMIN,android.permission.BLUETOOTH_CONNECT,android.permission.BLUETOOTH,(name=android.permission.BLUETOOTH_SCAN;usesPermissionFlags=neverForLocation),(name=android.permission.ACCESS_FINE_LOCATION;maxSdkVersion=30),(name=android.permission.ACCESS_COARSE_LOCATION;maxSdkVersion=30)
+android.permissions = android.permission.INTERNET,android.permission.BLUETOOTH_ADMIN,android.permission.BLUETOOTH_CONNECT,android.permission.BLUETOOTH,android.permission.BLUETOOTH_SCAN,android.permission.ACCESS_FINE_LOCATION,android.permission.ACCESS_COARSE_LOCATION
 android.api = 34
 android.minapi = 29
-android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,ACCESS_BACKGROUND_LOCATION
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
