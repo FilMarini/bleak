@@ -49,7 +49,7 @@ class ScannerApp(App):
         self.output_label = Label(text="Press Scan to start...")
         layout.add_widget(self.output_label)
 
-        self.scan_button = Button(text="Scan", on_press=self.scan_devices, disabled=False)
+        self.scan_button = Button(text="Scan", on_press=self.scan_devices, disabled=False, size_hint_y=None, height=140)
         layout.add_widget(self.scan_button)
         self.main_screen.add_widget(layout)
 
@@ -76,14 +76,14 @@ class ScannerApp(App):
         grid.bind(minimum_height=grid.setter('height'))
 
         for d in devices:
-            button = Button(text=f"{d.name} ({d.address})", on_press=lambda instance, dev=d: self.select_device(dev), size_hint_y=None, height=40)
+            button = Button(text=f"{d.name} ({d.address})", on_press=lambda instance, dev=d: self.select_device(dev), size_hint_y=None, height=140)
             grid.add_widget(button)
 
         scroll = ScrollView(size_hint=(1, 1))
         scroll.add_widget(grid)
         layout.add_widget(scroll)
 
-        close_button = Button(text="Close", on_press=lambda instance: self.switch_to_main_screen(), size_hint_y=None, height=40)
+        close_button = Button(text="Close", on_press=lambda instance: self.switch_to_main_screen(), size_hint_y=None, height=140)
         layout.add_widget(close_button)
         device_list_screen.add_widget(layout)
 
@@ -112,7 +112,6 @@ class ScannerApp(App):
     async def connect_worker(self, device):
         async with BleakClient(device) as client:
             self.connected = True
-            #Clock.schedule_once(lambda dt: self.update_label(f"Connected to {device.name}", dt), 0)
             Clock.schedule_once(lambda dt: self.update_scan_button("Disconnect", dt), 0)
             await client.start_notify(TX_CHARACTERISTIC_UUID, self.notification_handler)
             while self.keep_connected:
