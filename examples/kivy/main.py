@@ -118,7 +118,7 @@ class ScannerApp(App):
             self.main_screen.children[0].add_widget(self.graph_widget, index=1)
             while self.keep_connected:
                 await asyncio.sleep(1)
-                self.graph_widget.update_graph()
+                #self.graph_widget.update_graph()
             await client.stop_notify(TX_CHARACTERISTIC_UUID)
             await client.disconnect()
             # Remove the graph and use the label
@@ -130,8 +130,9 @@ class ScannerApp(App):
 
     async def notification_handler(self, sender, data):
         """Handle received data from the TX characteristic."""
-        self.data_list.append(data.decode())
-        Clock.schedule_once(lambda dt: self.update_label(f"Received {self.data_list}", dt), 0)
+        #self.data_list.append(data.decode())
+        self.graph_widget.update_graph(float(data.decode()))
+        #Clock.schedule_once(lambda dt: self.update_label(f"Received {self.data_list}", dt), 0)
 
     ##########
     # Disconnect
@@ -149,6 +150,7 @@ class ScannerApp(App):
 
     def switch_to_main_screen(self):
         self.switch_to_screen('main')
+        self.output_label.text = "Press Scan to start..."
         self.scan_button.disabled = False
 
     def update_label(self, text, dt):
