@@ -13,6 +13,8 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.utils import platform
 
+from graph_widget import RealTimeGraph
+
 if platform == "android":
     from android.permissions import request_permissions, Permission, check_permission
     permissions_list=[
@@ -47,14 +49,20 @@ class ScannerApp(App):
         self.main_screen = Screen(name='main')
         layout = BoxLayout(orientation='vertical')
         self.output_label = Label(text="Press Scan to start...")
-        layout.add_widget(self.output_label)
+        layout.add_widget(self.output_label, index=1)
 
         self.scan_button = Button(text="Scan", on_press=self.scan_devices, disabled=False, size_hint_y=None, height=140)
-        layout.add_widget(self.scan_button)
+        layout.add_widget(self.scan_button, index=0)
         self.main_screen.add_widget(layout)
-
+        # Add screen to manager
         self.screen_manager.add_widget(self.main_screen)
+        # Create instance of graph box
+        self.graph_widget = RealTimeGraph()
         return self.screen_manager
+
+    ##########
+    # Scan
+    ##########
 
     def scan_devices(self, instance):
         self.scan_button.disabled = True  # Disable while scanning
@@ -90,13 +98,6 @@ class ScannerApp(App):
         self.screen_manager.add_widget(device_list_screen)
         self.switch_to_screen('device_list')
 
-    def switch_to_screen(self, screen_name):
-        self.screen_manager.current = screen_name
-
-    def switch_to_main_screen(self):
-        self.switch_to_screen('main')
-        self.scan_button.disabled = False
-
     def select_device(self, device):
         self.device_to_connect = device
         self.switch_to_main_screen()
@@ -104,21 +105,51 @@ class ScannerApp(App):
         self.scan_button.disabled = True  # Disable while connecting
         asyncio.ensure_future(self.connect_worker(device))
 
-    async def notification_handler(self, sender, data):
-        """Handle received data from the TX characteristic."""
-        self.data_list.append(data.decode())
-        Clock.schedule_once(lambda dt: self.update_label(f"Received {self.data_list}", dt), 0)
-
+    ##########
+    # Connect
+    ##########
     async def connect_worker(self, device):
         async with BleakClient(device) as client:
             self.connected = True
             Clock.schedule_once(lambda dt: self.update_scan_button("Disconnect", dt), 0)
             await client.start_notify(TX_CHARACTERISTIC_UUID, self.notification_handler)
+            # Remove the label and use the graph
+            self.main_screen.children[0].remove_widget(self.output_label)
+            self.main_screen.children[0].add_widget(self.graph_widget, index=1)
             while self.keep_connected:
                 await asyncio.sleep(1)
+                self.graph_widget.update_graph()
             await client.stop_notify(TX_CHARACTERISTIC_UUID)
             await client.disconnect()
+            # Remove the graph and use the label
+            self.main_screen.children[0].remove_widget(self.graph_widget)
+            self.main_screen.children[0].add_widget(self.output_label, index=1)
+            # Change button to scan
+            Clock.schedule_once(lambda dt: self.update_scan_button("Scan", dt), 0)
             self.connected = False
+
+    async def notification_handler(self, sender, data):
+        """Handle received data from the TX characteristic."""
+        self.data_list.append(data.decode())
+        Clock.schedule_once(lambda dt: self.update_label(f"Received {self.data_list}", dt), 0)
+
+    ##########
+    # Disconnect
+    ##########
+    async def disconnect_worker(self):
+        self.keep_connected = False
+        await asyncio.sleep(1)
+        Clock.schedule_once(lambda dt: self.update_label("Disconnected", dt), 0)
+
+    ##########
+    # Utils
+    ##########
+    def switch_to_screen(self, screen_name):
+        self.screen_manager.current = screen_name
+
+    def switch_to_main_screen(self):
+        self.switch_to_screen('main')
+        self.scan_button.disabled = False
 
     def update_label(self, text, dt):
         self.output_label.text = text
@@ -126,12 +157,6 @@ class ScannerApp(App):
     def update_scan_button(self, text, dt):
         self.scan_button.text = text
         self.scan_button.disabled = False
-
-    async def disconnect_worker(self):
-        self.keep_connected = False
-        await asyncio.sleep(1)
-        Clock.schedule_once(lambda dt: self.update_label("Disconnected", dt), 0)
-        Clock.schedule_once(lambda dt: self.update_scan_button("Scan", dt), 0)
 
 async def main(app):
     await app.async_run("asyncio")  # Run the Kivy app
