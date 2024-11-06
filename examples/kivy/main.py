@@ -27,6 +27,10 @@ if platform == "android":
 
     request_permissions(permissions_list)
 
+# UUIDs for the Nordic UART Service (NUS)
+NUS_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+RX_CHARACTERISTIC_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+TX_CHARACTERISTIC_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 class ScannerApp(App):
     def __init__(self, **kwargs):
@@ -35,6 +39,7 @@ class ScannerApp(App):
         self.device_to_connect = None  # Store the device to connect
         self.keep_connected = True
         self.connected = False
+        self.data_list = []
         self.screen_manager = ScreenManager()
 
     def build(self):
@@ -99,13 +104,20 @@ class ScannerApp(App):
         self.scan_button.disabled = True  # Disable while connecting
         asyncio.ensure_future(self.connect_worker(device))
 
+    async def notification_handler(self, sender, data):
+        """Handle received data from the TX characteristic."""
+        self.data_list.append(data.decode())
+        Clock.schedule_once(lambda dt: self.update_label(f"Received {self.data_list}", dt), 0)
+
     async def connect_worker(self, device):
         async with BleakClient(device) as client:
             self.connected = True
-            Clock.schedule_once(lambda dt: self.update_label(f"Connected to {device.name}", dt), 0)
+            #Clock.schedule_once(lambda dt: self.update_label(f"Connected to {device.name}", dt), 0)
             Clock.schedule_once(lambda dt: self.update_scan_button("Disconnect", dt), 0)
+            await client.start_notify(TX_CHARACTERISTIC_UUID, self.notification_handler)
             while self.keep_connected:
                 await asyncio.sleep(1)
+            await client.stop_notify(TX_CHARACTERISTIC_UUID)
             await client.disconnect()
             self.connected = False
 
